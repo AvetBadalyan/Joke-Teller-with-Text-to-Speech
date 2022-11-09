@@ -115,7 +115,11 @@ const VoiceRSS = {
   },
 };
 
-// taken from SDK documentation https://www.voicerss.org/sdk/javascript.aspx
+// disable/enable button
+function toggleButton() {
+  button.disabled = !button.disabled;
+  audioElement.hidden = false;
+}
 
 // Passing Joke to VoiceRSS API
 
@@ -130,6 +134,7 @@ function tellMe(joke) {
     f: "44khz_16bit_stereo",
     ssml: false,
   });
+  // taken from SDK documentation https://www.voicerss.org/sdk/javascript.aspx
 }
 
 // Get joke from https://sv443.net/jokeapi/v2/
@@ -148,11 +153,17 @@ async function getJoke() {
     } else {
       joke = data.joke;
     }
+
     jokeText.innerText = joke;
+    // text-to-speech
     tellMe(joke);
+    // disable button
+    toggleButton();
   } catch (error) {
     alert(error);
   }
 }
 
-getJoke();
+// Event listeners
+button.addEventListener("click", getJoke);
+audioElement.addEventListener("ended", toggleButton);
