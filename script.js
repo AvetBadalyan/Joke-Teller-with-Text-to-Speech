@@ -1,7 +1,9 @@
 const button = document.getElementById("button");
 const audioElement = document.getElementById("audio");
+const jokeText = document.getElementById("joke-text");
 
-// download text to speech engine SDK for javascript from  https://www.voicerss.org/sdk/javascript.aspx 
+// enter http://www.voicerss.org/api/  and register in order to get API key
+// download text to speech engine SDK for javascript from  https://www.voicerss.org/sdk/javascript.aspx
 
 /*
 change in downloaded file 
@@ -113,10 +115,14 @@ const VoiceRSS = {
   },
 };
 
-function test() {
+// taken from SDK documentation https://www.voicerss.org/sdk/javascript.aspx
+
+// Passing Joke to VoiceRSS API
+
+function tellMe(joke) {
   VoiceRSS.speech({
     key: "c8454a56e97d4a069865e070aa2b5aa4",
-    src: "Hello, world!",
+    src: joke,
     hl: "en-us",
     v: "Linda",
     r: 0,
@@ -126,4 +132,27 @@ function test() {
   });
 }
 
-test();
+// Get joke from https://sv443.net/jokeapi/v2/
+// data structure is in dataTypeFromFetch.js file
+
+async function getJoke() {
+  let joke = "";
+  const apiUrl = "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw";
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    if (data.setup) {
+      joke = ` - ${data.setup} 
+      - ${data.delivery}`;
+    } else {
+      joke = data.joke;
+    }
+    jokeText.innerText = joke;
+    tellMe(joke);
+  } catch (error) {
+    alert(error);
+  }
+}
+
+getJoke();

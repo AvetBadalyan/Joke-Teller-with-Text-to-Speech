@@ -17,6 +17,7 @@ body {
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  gap: 20px;
   background: url("./robot.gif");
   background-size: contain;
   background-position: left center;
@@ -48,6 +49,16 @@ button:active {
 button:disabled {
   cursor: default;
   filter: brightness(30%);
+}
+
+.joke-container {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 20px;
+  color: white;
+  background: rgb(255, 52, 130);
+  border: none;
+  border-radius: 5px;
+  box-shadow: 2px 2px 20px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Media queries : tablet or smaller */
