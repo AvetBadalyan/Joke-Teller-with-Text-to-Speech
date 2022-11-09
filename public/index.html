@@ -23,5 +23,24 @@
     <p class="copyrights">A little project by Avet Badalyan</p>
     <!-- Script -->
     <script src="script.js"></script>
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAL5stggmKror6qZHIxFYOUDRsClcqEbbg",
+        authDomain: "get-joke-f9568.firebaseapp.com",
+        projectId: "get-joke-f9568",
+        storageBucket: "get-joke-f9568.appspot.com",
+        messagingSenderId: "147491051030",
+        appId: "1:147491051030:web:f966ddead4fbc2fb4c4737",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+    </script>
   </body>
 </html>
