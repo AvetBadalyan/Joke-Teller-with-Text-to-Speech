@@ -1,6 +1,7 @@
 const button = document.getElementById("button");
 const audioElement = document.getElementById("audio");
 const jokeText = document.getElementById("joke-text");
+const jokeContainer = document.getElementById("joke-container");
 
 // enter http://www.voicerss.org/api/  and register in order to get API key
 // download text to speech engine SDK for javascript from  https://www.voicerss.org/sdk/javascript.aspx
@@ -119,6 +120,7 @@ const VoiceRSS = {
 function toggleButton() {
   button.disabled = !button.disabled;
   audioElement.hidden = false;
+  jokeContainer.hidden = false;
 }
 
 // Passing Joke to VoiceRSS API
