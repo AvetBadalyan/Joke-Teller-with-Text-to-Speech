@@ -18,7 +18,8 @@ const CONFIG = Object.freeze({
 	storageKeys: {
 		savedJokes: 'jokeTeller_savedJokes',
 		totalJokesHeard: 'jokeTeller_totalJokesHeard',
-		colorTheme: 'jokeTeller_colorTheme'
+		colorTheme: 'jokeTeller_colorTheme',
+		selectedVoice: 'jokeTeller_selectedVoice'
 	},
 
 	// UI timing in milliseconds

@@ -1,7 +1,7 @@
 {
 	"name": "Joke Teller - AI Comedy Robot",
 	"short_name": "Joke Teller",
-	"description": "An AI-powered joke teller with voice commands, categories, and text-to-speech",
+	"description": "An AI comedy robot that tells jokes with text-to-speech, categories, and a saved jokes collection.",
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#0f0f23",

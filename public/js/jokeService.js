@@ -13,10 +13,10 @@
  *     id,           — unique joke ID from the API
  *     apiCategory,  — the raw API category slug (e.g. "Programming", "Pun")
  *     type,         — "single" or "twopart"
- *     setup,        — first part of a twopart joke, null for single
- *     punchline,    — second part of a twopart joke, null for single
- *     singleText,   — the text of a single joke, null for twopart
- *     fullText      — the complete joke as one string (used for TTS and sharing)
+ *     setup,        — setup line (twopart only)
+ *     punchline,    — punchline/delivery (twopart only)
+ *     singleText,   — joke text (single only)
+ *     fullText      — complete joke as one string (used for TTS and sharing)
  *   }
  *
  * Note on apiCategory values: these are the slugs the API expects in the URL.
@@ -57,17 +57,16 @@ const JokeService = {
  * app never has to branch on joke type except when displaying text.
  */
 function normalizeJoke(rawJoke) {
-	const isTwoPart = rawJoke.type === 'twopart'
-
 	return {
 		id: rawJoke.id,
-		apiCategory: rawJoke.category, // raw API slug — display label is derived in the UI layer
+		apiCategory: rawJoke.category,
 		type: rawJoke.type,
-		setup: rawJoke.setup ?? null,
-		punchline: rawJoke.delivery ?? null, // "delivery" in the API = the punchline
-		singleText: rawJoke.joke ?? null,
-		fullText: isTwoPart
-			? `${rawJoke.setup} ... ${rawJoke.delivery}`
-			: rawJoke.joke
+		setup: rawJoke.setup,
+		punchline: rawJoke.delivery, // "delivery" in the API = the punchline
+		singleText: rawJoke.joke,
+		fullText:
+			rawJoke.type === 'twopart'
+				? `${rawJoke.setup} ... ${rawJoke.delivery}`
+				: rawJoke.joke
 	}
 }

@@ -64,6 +64,12 @@ function attachEventListeners() {
 	elements.sidebarOverlay.addEventListener('click', UI.closeSidebar)
 	elements.clearSavedJokesBtn.addEventListener('click', clearAllSavedJokes)
 
+	// Voice selector
+	elements.voiceSelect.addEventListener('change', e => {
+		setVoice(e.target.value)
+	})
+	elements.previewVoiceBtn.addEventListener('click', previewVoice)
+
 	document.addEventListener('keydown', handleKeyboardShortcut)
 }
 

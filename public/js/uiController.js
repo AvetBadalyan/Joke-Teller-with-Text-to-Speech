@@ -64,6 +64,10 @@ function initUI() {
 		robotWrapper: document.getElementById('robotWrapper'),
 		soundWave: document.getElementById('soundWave'),
 
+		// Voice selector
+		voiceSelect: document.getElementById('voiceSelect'),
+		previewVoiceBtn: document.getElementById('previewVoiceBtn'),
+
 		// Toasts
 		toastContainer: document.getElementById('toastContainer')
 	}
@@ -228,6 +232,32 @@ function updateTotalJokesHeard(count) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Voice selector
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Populate the voice dropdown with available voices.
+ * @param {Array} voices - Array of { name, lang } from audioController.getVoices()
+ * @param {string} selectedName - Currently selected voice name
+ */
+function populateVoiceDropdown(voices, selectedName) {
+	const select = elements.voiceSelect
+	if (!select) return
+
+	if (voices.length === 0) {
+		select.innerHTML = '<option value="">No voices available</option>'
+		return
+	}
+
+	select.innerHTML = voices
+		.map(
+			v =>
+				`<option value="${v.name}"${v.name === selectedName ? ' selected' : ''}>${v.name}</option>`
+		)
+		.join('')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Theme
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -327,6 +357,7 @@ const UI = {
 	renderSavedJokes,
 	setSaveButtonState,
 	updateTotalJokesHeard,
+	populateVoiceDropdown,
 	toggleTheme,
 	showToast
 }
