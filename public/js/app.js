@@ -39,6 +39,9 @@ function loadPersistedData() {
 
 	totalJokesHeard = Storage.get(CONFIG.storageKeys.totalJokesHeard, 0)
 	UI.updateTotalJokesHeard(totalJokesHeard)
+
+	const savedCategory = Storage.get(CONFIG.storageKeys.selectedCategory, 'Any')
+	selectCategory(savedCategory)
 }
 
 function attachEventListeners() {
@@ -104,6 +107,7 @@ async function fetchAndShowJoke() {
 function selectCategory(apiCategorySlug) {
 	JokeService.setCategory(apiCategorySlug)
 	UI.setActiveCategory(apiCategorySlug)
+	Storage.set(CONFIG.storageKeys.selectedCategory, apiCategorySlug)
 }
 
 // --- Saving jokes ------------------------------------------------------------
@@ -209,7 +213,11 @@ function incrementTotalJokesHeard() {
 
 function handleKeyboardShortcut(event) {
 	// Ignore shortcuts when the user is typing in a form field
-	if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA')
+	if (
+		event.target.tagName === 'INPUT' ||
+		event.target.tagName === 'TEXTAREA' ||
+		event.target.tagName === 'SELECT'
+	)
 		return
 
 	const sidebarOpen = UI.isSidebarOpen()
@@ -222,7 +230,8 @@ function handleKeyboardShortcut(event) {
 		// The shortcuts below are suppressed while the sidebar is open so that
 		// keyboard-navigating the sidebar list doesn't accidentally trigger them.
 		case 'Space':
-			if (!sidebarOpen) {
+			// Skip if the button itself is focused — it will fire its own click event
+			if (!sidebarOpen && event.target !== UI.elements.tellJokeBtn) {
 				event.preventDefault()
 				fetchAndShowJoke()
 			}

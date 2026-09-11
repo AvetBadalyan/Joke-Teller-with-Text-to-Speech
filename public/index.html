@@ -141,7 +141,7 @@
 					>
 						<img
 							src="robot.gif"
-							alt="Animated robot mascot"
+							alt=""
 							class="robot__image"
 						/>
 					</div>
@@ -150,6 +150,7 @@
 					<div
 						class="sound-wave"
 						id="soundWave"
+						aria-hidden="true"
 					>
 						<span></span>
 						<span></span>
@@ -162,7 +163,6 @@
 				<!-- Joke display card -->
 				<section
 					class="joke-card"
-					aria-live="polite"
 					aria-label="Current joke"
 				>
 					<!-- Category badge (e.g. "💻 Coding") -->
@@ -174,6 +174,16 @@
 					</span>
 
 					<div class="joke-card__body">
+						<!-- sr-only live region: announced once with the full joke text.
+						     Kept separate from the typewriter elements so screen readers
+						     hear the complete joke, not one character at a time. -->
+						<p
+							id="jokeAnnouncement"
+							class="sr-only"
+							aria-live="polite"
+							aria-atomic="true"
+						></p>
+
 						<!-- Two-part joke: setup shown first, punchline after a pause -->
 						<p
 							class="joke-card__setup"
@@ -383,6 +393,7 @@
 				id="savedJokesSidebar"
 				aria-label="Saved jokes"
 				aria-hidden="true"
+				inert
 			>
 				<div class="sidebar__header">
 					<h2 class="sidebar__title">❤️ Saved Jokes</h2>

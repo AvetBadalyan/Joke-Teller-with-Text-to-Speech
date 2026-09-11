@@ -7,13 +7,14 @@
  * External requests (the joke API) are left untouched.
  */
 
-const CACHE_VERSION = 'v1.0.0'
+const CACHE_VERSION = 'v1.2.1'
 const CACHE_NAME = `joke-teller-${CACHE_VERSION}`
 
 const STATIC_ASSETS = [
-	'./',
 	'./index.html',
+	'./offline.html',
 	'./style.css',
+	'./manifest.json',
 	'./js/config.js',
 	'./js/storage.js',
 	'./js/jokeService.js',
@@ -79,6 +80,10 @@ async function networkFirst(request) {
 	} catch {
 		const cached = await caches.match(request)
 		if (cached) return cached
-		throw new Error('Offline and no cached copy available')
+
+		// Last resort: show the offline page for navigation requests
+		if (request.mode === 'navigate') {
+			return caches.match('./offline.html')
+		}
 	}
 }

@@ -20,6 +20,9 @@ const CATEGORY_LABELS = {
 // DOM element references — populated once by initUI()
 let elements = {}
 
+// Generation counter — incremented on every new joke to cancel stale typewriter chains
+let jokeGeneration = 0
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Init
 // ─────────────────────────────────────────────────────────────────────────────
@@ -68,6 +71,9 @@ function initUI() {
 		voiceSelect: document.getElementById('voiceSelect'),
 		previewVoiceBtn: document.getElementById('previewVoiceBtn'),
 
+		// Joke card sr-only live region (announced once, not character-by-character)
+		jokeAnnouncement: document.getElementById('jokeAnnouncement'),
+
 		// Toasts
 		toastContainer: document.getElementById('toastContainer')
 	}
@@ -87,7 +93,16 @@ function displayJoke(joke) {
 	elements.jokeCategoryBadge.textContent =
 		CATEGORY_LABELS[joke.apiCategory] ?? joke.apiCategory
 
-	// Clear previous text
+	// Bump generation — any in-flight typewriter chain from a previous joke
+	// will see its generation is stale and stop appending characters.
+	const gen = ++jokeGeneration
+
+	// Announce the complete joke text once to screen readers via the sr-only
+	// live region, so they hear the full joke rather than character-by-character
+	// updates from the visible typewriter elements.
+	elements.jokeAnnouncement.textContent = joke.fullText
+
+	// Clear previous visible text
 	elements.jokeSetupText.textContent = ''
 	elements.jokePunchlineText.textContent = ''
 	elements.jokeSingleText.textContent = ''
@@ -97,10 +112,10 @@ function displayJoke(joke) {
 		elements.jokeSetupText.hidden = false
 		elements.jokePunchlineText.hidden = false
 
-		typeText(elements.jokeSetupText, joke.setup, () => {
+		typeText(elements.jokeSetupText, joke.setup, gen, () => {
 			setTimeout(
-				() => typeText(elements.jokePunchlineText, joke.punchline),
-				500
+				() => typeText(elements.jokePunchlineText, joke.punchline, gen),
+				CONFIG.timing.punchlineDelay
 			)
 		})
 	} else {
@@ -108,7 +123,7 @@ function displayJoke(joke) {
 		elements.jokePunchlineText.hidden = true
 		elements.jokeSingleText.hidden = false
 
-		typeText(elements.jokeSingleText, joke.singleText)
+		typeText(elements.jokeSingleText, joke.singleText, gen)
 	}
 
 	// Enable action buttons now that there's a joke to act on
@@ -152,17 +167,23 @@ function setActiveCategory(categorySlug) {
 function openSidebar() {
 	elements.savedJokesSidebar.classList.add('is-open')
 	elements.sidebarOverlay.classList.add('is-visible')
+	elements.savedJokesSidebar.removeAttribute('inert')
 	elements.savedJokesSidebar.setAttribute('aria-hidden', 'false')
 	elements.savedJokesToggleBtn.setAttribute('aria-expanded', 'true')
 	document.body.style.overflow = 'hidden'
+	// Move focus into the sidebar so keyboard users aren't left behind the backdrop
+	elements.closeSidebarBtn.focus()
 }
 
 function closeSidebar() {
 	elements.savedJokesSidebar.classList.remove('is-open')
 	elements.sidebarOverlay.classList.remove('is-visible')
+	elements.savedJokesSidebar.setAttribute('inert', '')
 	elements.savedJokesSidebar.setAttribute('aria-hidden', 'true')
 	elements.savedJokesToggleBtn.setAttribute('aria-expanded', 'false')
 	document.body.style.overflow = ''
+	// Return focus to the button that opened the sidebar
+	elements.savedJokesToggleBtn.focus()
 }
 
 function isSidebarOpen() {
@@ -317,13 +338,19 @@ function escapeHtml(value) {
  * Typewriter effect — appends text one character at a time.
  * @param {HTMLElement} el      - Target element to type into.
  * @param {string}      text    - Text to type.
+ * @param {number}      gen     - Generation stamp; stops if a newer joke has started.
  * @param {Function}   [onDone] - Optional callback fired when typing finishes.
  */
-function typeText(el, text, onDone) {
+function typeText(el, text, gen, onDone) {
 	let i = 0
 	el.classList.add('typing-cursor')
 
 	function next() {
+		// A new joke has been requested — stop this stale chain immediately
+		if (gen !== jokeGeneration) {
+			el.classList.remove('typing-cursor')
+			return
+		}
 		if (i < text.length) {
 			el.textContent += text[i++]
 			setTimeout(next, CONFIG.timing.typewriterCharDelay)

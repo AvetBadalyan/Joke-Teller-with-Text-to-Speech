@@ -19,12 +19,14 @@ const CONFIG = Object.freeze({
 		savedJokes: 'jokeTeller_savedJokes',
 		totalJokesHeard: 'jokeTeller_totalJokesHeard',
 		colorTheme: 'jokeTeller_colorTheme',
-		selectedVoice: 'jokeTeller_selectedVoice'
+		selectedVoice: 'jokeTeller_selectedVoice',
+		selectedCategory: 'jokeTeller_selectedCategory'
 	},
 
 	// UI timing in milliseconds
 	timing: {
 		typewriterCharDelay: 30, // delay between each character in the typewriter effect
+		punchlineDelay: 500, // pause between setup and punchline in a two-part joke
 		toastVisibleDuration: 3000 // how long a toast notification stays on screen
 	}
 })

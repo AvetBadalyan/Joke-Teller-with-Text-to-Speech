@@ -34,7 +34,7 @@ function initAudio({ onStart, onEnd } = {}) {
 	}
 
 	loadVoices()
-	synth.addEventListener?.('voiceschanged', loadVoices)
+	synth.addEventListener('voiceschanged', loadVoices)
 }
 
 function speakJoke(text) {
