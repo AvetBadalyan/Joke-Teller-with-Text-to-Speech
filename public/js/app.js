@@ -13,7 +13,7 @@
 
 let currentJoke = null // the joke currently shown on the card
 let savedJokes = [] // jokes the user has saved (persisted to localStorage)
-let totalJokesHeard = 0 // running count of jokes fetched this session (persisted)
+let totalJokesHeard = 0 // running total of jokes fetched (persisted across sessions)
 let isFetchingJoke = false // guard flag to prevent overlapping fetch requests
 
 // --- Initialisation ----------------------------------------------------------

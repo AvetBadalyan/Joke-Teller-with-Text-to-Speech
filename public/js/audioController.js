@@ -93,7 +93,5 @@ function pickVoice(voices) {
  * Return all English voices for the dropdown.
  */
 function getVoiceOptions(voices) {
-	return voices
-		.filter(v => v.lang.startsWith('en'))
-		.map(v => ({ name: v.name, lang: v.lang }))
+	return voices.filter(v => v.lang.startsWith('en')).map(v => v.name)
 }

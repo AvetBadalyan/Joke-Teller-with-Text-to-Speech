@@ -13,9 +13,9 @@
  *     id,           — unique joke ID from the API
  *     apiCategory,  — the raw API category slug (e.g. "Programming", "Pun")
  *     type,         — "single" or "twopart"
- *     setup,        — setup line (twopart only)
- *     punchline,    — punchline/delivery (twopart only)
- *     singleText,   — joke text (single only)
+ *     setup,        — setup line (twopart only, undefined for single)
+ *     punchline,    — punchline/delivery (twopart only, undefined for single)
+ *     singleText,   — joke text (single only, undefined for twopart)
  *     fullText      — complete joke as one string (used for TTS and sharing)
  *   }
  *

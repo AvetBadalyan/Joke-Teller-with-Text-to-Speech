@@ -258,7 +258,7 @@ function updateTotalJokesHeard(count) {
 
 /**
  * Populate the voice dropdown with available voices.
- * @param {Array} voices - Array of { name, lang } from audioController.getVoices()
+ * @param {string[]} voices - Array of voice names from audioController
  * @param {string} selectedName - Currently selected voice name
  */
 function populateVoiceDropdown(voices, selectedName) {
@@ -272,8 +272,8 @@ function populateVoiceDropdown(voices, selectedName) {
 
 	select.innerHTML = voices
 		.map(
-			v =>
-				`<option value="${v.name}"${v.name === selectedName ? ' selected' : ''}>${v.name}</option>`
+			name =>
+				`<option value="${name}"${name === selectedName ? ' selected' : ''}>${name}</option>`
 		)
 		.join('')
 }
