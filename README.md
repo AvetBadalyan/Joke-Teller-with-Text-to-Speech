@@ -41,7 +41,7 @@ public/
 ├── index.html              # Semantic HTML with full ARIA attributes
 ├── style.css               # All styles — design tokens, components, responsive
 ├── manifest.json           # PWA manifest
-├── sw.js                   # Service worker (cache-first strategy)
+├── service-worker.js       # Service worker (network-first strategy)
 └── js/
     ├── config.js           # Centralised settings (API URLs, timing, storage keys)
     ├── storage.js          # localStorage wrapper with error handling

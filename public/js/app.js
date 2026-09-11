@@ -42,27 +42,27 @@ function loadPersistedData() {
 }
 
 function attachEventListeners() {
-	const el = UI.elements
+	const elements = UI.elements
 
-	el.tellJokeBtn.addEventListener('click', fetchAndShowJoke)
+	elements.tellJokeBtn.addEventListener('click', fetchAndShowJoke)
 
-	el.categoryButtons.forEach(btn => {
+	elements.categoryButtons.forEach(btn => {
 		btn.addEventListener('click', () => selectCategory(btn.dataset.category))
 	})
 
-	el.saveJokeBtn.addEventListener('click', toggleSaveCurrentJoke)
-	el.shareJokeBtn.addEventListener('click', shareCurrentJoke)
-	el.copyJokeBtn.addEventListener('click', copyCurrentJoke)
+	elements.saveJokeBtn.addEventListener('click', toggleSaveCurrentJoke)
+	elements.shareJokeBtn.addEventListener('click', shareCurrentJoke)
+	elements.copyJokeBtn.addEventListener('click', copyCurrentJoke)
 
-	el.themeToggleBtn.addEventListener('click', () => {
+	elements.themeToggleBtn.addEventListener('click', () => {
 		const newTheme = UI.toggleTheme()
 		UI.showToast(`Switched to ${newTheme} mode`, 'info')
 	})
 
-	el.savedJokesToggleBtn.addEventListener('click', UI.openSidebar)
-	el.closeSidebarBtn.addEventListener('click', UI.closeSidebar)
-	el.sidebarOverlay.addEventListener('click', UI.closeSidebar)
-	el.clearSavedJokesBtn.addEventListener('click', clearAllSavedJokes)
+	elements.savedJokesToggleBtn.addEventListener('click', UI.openSidebar)
+	elements.closeSidebarBtn.addEventListener('click', UI.closeSidebar)
+	elements.sidebarOverlay.addEventListener('click', UI.closeSidebar)
+	elements.clearSavedJokesBtn.addEventListener('click', clearAllSavedJokes)
 
 	document.addEventListener('keydown', handleKeyboardShortcut)
 }
@@ -206,19 +206,26 @@ function handleKeyboardShortcut(event) {
 	if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA')
 		return
 
+	const sidebarOpen = UI.isSidebarOpen()
+
 	switch (event.code) {
+		case 'Escape':
+			if (sidebarOpen) UI.closeSidebar()
+			break
+
+		// The shortcuts below are suppressed while the sidebar is open so that
+		// keyboard-navigating the sidebar list doesn't accidentally trigger them.
 		case 'Space':
-			event.preventDefault()
-			fetchAndShowJoke()
+			if (!sidebarOpen) {
+				event.preventDefault()
+				fetchAndShowJoke()
+			}
 			break
 		case 'KeyF':
-			toggleSaveCurrentJoke()
+			if (!sidebarOpen) toggleSaveCurrentJoke()
 			break
 		case 'KeyC':
-			copyCurrentJoke()
-			break
-		case 'Escape':
-			UI.closeSidebar()
+			if (!sidebarOpen) copyCurrentJoke()
 			break
 	}
 }

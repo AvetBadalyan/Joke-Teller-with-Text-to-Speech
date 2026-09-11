@@ -6,7 +6,8 @@
  * what happened.
  */
 
-// Maps JokeAPI category slugs → user-friendly display labels
+// Maps JokeAPI category slugs → user-friendly display labels.
+// Keys match the data-category attributes in index.html exactly.
 const CATEGORY_LABELS = {
 	Any: '🎲 Random',
 	Programming: '💻 Coding',
@@ -76,7 +77,7 @@ function initUI() {
 
 /**
  * Render a joke on the card with a typewriter animation.
- * Two-part jokes show setup first, then punchline after a short pause.
+ * Two-part jokes show the setup first, then the punchline after a short pause.
  */
 function displayJoke(joke) {
 	elements.jokeCategoryBadge.textContent =
@@ -103,7 +104,7 @@ function displayJoke(joke) {
 		elements.jokePunchlineText.hidden = true
 		elements.jokeSingleText.hidden = false
 
-		typeText(elements.jokeSingleText, joke.text)
+		typeText(elements.jokeSingleText, joke.singleText)
 	}
 
 	// Enable action buttons now that there's a joke to act on
@@ -147,13 +148,21 @@ function setActiveCategory(categorySlug) {
 function openSidebar() {
 	elements.savedJokesSidebar.classList.add('is-open')
 	elements.sidebarOverlay.classList.add('is-visible')
+	elements.savedJokesSidebar.setAttribute('aria-hidden', 'false')
+	elements.savedJokesToggleBtn.setAttribute('aria-expanded', 'true')
 	document.body.style.overflow = 'hidden'
 }
 
 function closeSidebar() {
 	elements.savedJokesSidebar.classList.remove('is-open')
 	elements.sidebarOverlay.classList.remove('is-visible')
+	elements.savedJokesSidebar.setAttribute('aria-hidden', 'true')
+	elements.savedJokesToggleBtn.setAttribute('aria-expanded', 'false')
 	document.body.style.overflow = ''
+}
+
+function isSidebarOpen() {
+	return elements.savedJokesSidebar.classList.contains('is-open')
 }
 
 /**
@@ -165,6 +174,9 @@ function renderSavedJokes(savedJokes, callbacks) {
 	elements.savedJokesCount.textContent = savedJokes.length
 
 	if (savedJokes.length === 0) {
+		// Clearing innerHTML first ensures the empty message element (which
+		// lives in the DOM) is not duplicated if it was previously removed
+		// by a prior innerHTML assignment and then re-appended here.
 		elements.savedJokesList.innerHTML = ''
 		elements.savedJokesList.appendChild(elements.savedJokesEmptyMsg)
 		elements.savedJokesEmptyMsg.hidden = false
@@ -179,17 +191,19 @@ function renderSavedJokes(savedJokes, callbacks) {
 		.map(
 			(joke, i) => `
         <div class="saved-joke-item" data-index="${i}">
-          <span class="saved-joke-item__category">${CATEGORY_LABELS[joke.apiCategory] ?? joke.apiCategory}</span>
-          <p class="saved-joke-item__text">${joke.fullText}</p>
+          <span class="saved-joke-item__category">${escapeHtml(
+						CATEGORY_LABELS[joke.apiCategory] ?? joke.apiCategory
+					)}</span>
+          <p class="saved-joke-item__text">${escapeHtml(joke.fullText)}</p>
           <div class="saved-joke-item__actions">
-            <button class="btn btn--ghost" data-action="play" title="Read aloud">🔊</button>
-            <button class="btn btn--ghost" data-action="remove" title="Remove">🗑️</button>
+            <button class="btn btn--ghost" data-action="play" title="Read aloud" aria-label="Read joke aloud">🔊</button>
+            <button class="btn btn--ghost" data-action="remove" title="Remove" aria-label="Remove joke">🗑️</button>
           </div>
         </div>`
 		)
 		.join('')
 
-	// Attach click handlers
+	// Attach click handlers via event delegation on the container
 	elements.savedJokesList.querySelectorAll('[data-action]').forEach(btn => {
 		btn.addEventListener('click', e => {
 			const item = e.currentTarget.closest('.saved-joke-item')
@@ -243,7 +257,7 @@ function showToast(message, type = 'info') {
 	toast.className = `toast toast--${type}`
 	toast.innerHTML = `
     <span class="toast__icon">${icons[type] ?? icons.info}</span>
-    <span class="toast__message">${message}</span>`
+    <span class="toast__message">${escapeHtml(message)}</span>`
 
 	elements.toastContainer.appendChild(toast)
 
@@ -255,11 +269,25 @@ function showToast(message, type = 'info') {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Private helper
+// Private helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Escape a string for safe insertion into innerHTML.
+ * Joke text comes from a third-party API and toast messages can contain
+ * arbitrary content, so we neutralise any HTML before rendering it.
+ */
+function escapeHtml(value) {
+	const div = document.createElement('div')
+	div.textContent = String(value ?? '')
+	return div.innerHTML
+}
+
+/**
  * Typewriter effect — appends text one character at a time.
+ * @param {HTMLElement} el      - Target element to type into.
+ * @param {string}      text    - Text to type.
+ * @param {Function}   [onDone] - Optional callback fired when typing finishes.
  */
 function typeText(el, text, onDone) {
 	let i = 0
@@ -282,7 +310,7 @@ function typeText(el, text, onDone) {
 // Export for app.js
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Grouped as UI so app.js can do UI.init(), UI.displayJoke(), UI.elements, etc.
+// Grouped as UI so app.js can call UI.init(), UI.displayJoke(), UI.elements, etc.
 const UI = {
 	// elements is accessed after init() populates it
 	get elements() {
@@ -295,6 +323,7 @@ const UI = {
 	setActiveCategory,
 	openSidebar,
 	closeSidebar,
+	isSidebarOpen,
 	renderSavedJokes,
 	setSaveButtonState,
 	updateTotalJokesHeard,

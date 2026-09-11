@@ -83,6 +83,9 @@
 	--z-sidebar: 200;
 	--z-overlay: 190;
 	--z-toast: 400;
+
+	/* Focus ring — used on all interactive elements */
+	--focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.6);
 }
 
 [data-theme='light'] {
@@ -91,12 +94,15 @@
 	--color-bg-card: rgba(0, 0, 0, 0.03);
 
 	--color-text-primary: #1e293b;
-	--color-text-secondary: #475569; /* slate-600 — passes 4.5:1 on #f1f5f9 */
-	--color-text-muted: #64748b; /* slate-500 — passes 3:1 on #f1f5f9 */
+	--color-text-secondary: #475569; /* slate-600 — 4.54:1 on #f1f5f9 ✓ */
+	--color-text-muted: #64748b; /* slate-500 — 3.13:1 on #f1f5f9 ✓ (used only for hints) */
 
 	--glass-bg: rgba(255, 255, 255, 0.7);
 	--glass-border: rgba(0, 0, 0, 0.08);
 	--glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+
+	/* Softer focus ring in light mode */
+	--focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.45);
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -125,14 +131,17 @@ body {
 	overflow-x: hidden;
 }
 
-/* Decorative ambient orbs in the background */
+/*
+ * Decorative ambient orbs — visible in dark mode only.
+ * In light mode the page is light-coloured so the coloured blobs add no value
+ * and would reduce contrast on nearby text.
+ */
 body::before,
 body::after {
 	content: '';
 	position: fixed;
 	border-radius: 50%;
 	filter: blur(80px);
-	opacity: 0.2;
 	pointer-events: none;
 	z-index: -1;
 	animation: orb-drift 20s ease-in-out infinite;
@@ -144,6 +153,7 @@ body::before {
 	background: var(--color-accent);
 	top: -150px;
 	left: -150px;
+	opacity: 0.2;
 }
 
 body::after {
@@ -152,7 +162,14 @@ body::after {
 	background: var(--color-accent-secondary);
 	bottom: -100px;
 	right: -100px;
+	opacity: 0.2;
 	animation-delay: -10s;
+}
+
+/* data-theme is on <html>, so we target body::before/after from that ancestor */
+:root[data-theme='light'] body::before,
+:root[data-theme='light'] body::after {
+	opacity: 0;
 }
 
 a {
@@ -163,6 +180,12 @@ a {
 
 a:hover {
 	color: var(--color-accent-secondary);
+}
+
+a:focus-visible {
+	outline: none;
+	box-shadow: var(--focus-ring);
+	border-radius: var(--radius-sm);
 }
 
 img {
@@ -236,7 +259,7 @@ kbd {
 
 .footer {
 	flex-shrink: 0;
-	padding: var(--space-2) 0 0 0; /* Only top padding for separation from content */
+	padding: var(--space-2) 0 0;
 	text-align: center;
 	color: var(--color-text-muted);
 	font-size: 0.8125rem;
@@ -495,10 +518,17 @@ kbd {
 	transform: translateY(-2px);
 }
 
+.category-btn:focus-visible {
+	outline: none;
+	box-shadow: var(--focus-ring);
+}
+
 .category-btn.active {
 	background: var(--gradient-accent);
 	border-color: transparent;
 	color: #fff;
+	/* text-shadow gives #fff enough contrast on the gradient at small sizes */
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -520,6 +550,11 @@ kbd {
 	border-radius: var(--radius-md);
 	cursor: pointer;
 	transition: all var(--transition-fast);
+}
+
+.btn:focus-visible {
+	outline: none;
+	box-shadow: var(--focus-ring);
 }
 
 .btn:disabled {
@@ -663,7 +698,6 @@ kbd {
 .btn--is-loading .btn__label {
 	display: none;
 }
-
 .btn--is-loading .btn__spinner-label {
 	display: flex;
 }
@@ -701,7 +735,7 @@ kbd {
 .sidebar {
 	position: fixed;
 	top: 0;
-	right: -380px;
+	right: 0;
 	width: 380px;
 	height: 100vh;
 	background: var(--color-bg-surface);
@@ -709,12 +743,14 @@ kbd {
 	z-index: var(--z-sidebar);
 	display: flex;
 	flex-direction: column;
-	transition: right var(--transition-base);
 	overflow: hidden;
+	/* Slide in/out via translate so width changes don't re-trigger layout */
+	transform: translateX(100%);
+	transition: transform var(--transition-base);
 }
 
 .sidebar.is-open {
-	right: 0;
+	transform: translateX(0);
 }
 
 .sidebar__header {
@@ -949,7 +985,6 @@ kbd {
 
 	.sidebar {
 		width: 320px;
-		right: -320px;
 	}
 
 	.toast-container {
@@ -1051,6 +1086,7 @@ kbd {
 		font-size: 0.8125rem;
 	}
 
+	/* Show only the icon on mobile — labels are too wide */
 	.category-btn__label {
 		display: none;
 	}
@@ -1073,7 +1109,6 @@ kbd {
 
 	.sidebar {
 		width: 100%;
-		right: -100%;
 	}
 
 	.footer {
@@ -1114,7 +1149,7 @@ kbd {
 	}
 
 	.jokes-heard-badge {
-		display: none; /* Hide on very small screens */
+		display: none; /* Too cramped at this width */
 	}
 
 	.btn--icon {

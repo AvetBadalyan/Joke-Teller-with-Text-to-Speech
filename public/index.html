@@ -113,6 +113,8 @@
 						class="btn btn--icon"
 						id="savedJokesToggleBtn"
 						aria-label="Open saved jokes"
+						aria-expanded="false"
+						aria-controls="savedJokesSidebar"
 						title="Saved jokes"
 					>
 						<span aria-hidden="true">❤️</span>
@@ -131,7 +133,7 @@
 				<!-- Robot image + sound wave animation -->
 				<section
 					class="robot-section"
-					aria-hidden="true"
+					aria-label="Robot mascot"
 				>
 					<div
 						class="robot"
@@ -237,7 +239,7 @@
 					<div class="category-filter__buttons">
 						<!--
 					data-category must match the API slug exactly.
-					Display labels are mapped in uiController (CATEGORY_DISPLAY_LABELS).
+					Display labels are mapped in uiController (CATEGORY_LABELS).
 				-->
 						<button
 							class="category-btn active"
@@ -419,7 +421,7 @@
 					<a
 						href="https://github.com/AvetBadalyan"
 						target="_blank"
-						rel="noopener"
+						rel="noopener noreferrer"
 					>
 						GitHub
 					</a>
@@ -444,7 +446,7 @@
 			if ('serviceWorker' in navigator) {
 				window.addEventListener('load', () => {
 					navigator.serviceWorker
-						.register('sw.js')
+						.register('service-worker.js')
 						.catch(err =>
 							console.warn('Service worker registration failed:', err)
 						)

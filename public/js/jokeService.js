@@ -15,12 +15,12 @@
  *     type,         — "single" or "twopart"
  *     setup,        — first part of a twopart joke, null for single
  *     punchline,    — second part of a twopart joke, null for single
- *     text,         — the full text of a single joke, null for twopart
+ *     singleText,   — the text of a single joke, null for twopart
  *     fullText      — the complete joke as one string (used for TTS and sharing)
  *   }
  *
  * Note on apiCategory values: these are the slugs the API expects in the URL.
- * Human-readable display labels are in uiController (CATEGORY_DISPLAY_LABELS).
+ * Human-readable display labels are in uiController (CATEGORY_LABELS).
  */
 
 // The API category slug sent in the URL. "Any" means no filter.
@@ -65,7 +65,7 @@ function normalizeJoke(rawJoke) {
 		type: rawJoke.type,
 		setup: rawJoke.setup ?? null,
 		punchline: rawJoke.delivery ?? null, // "delivery" in the API = the punchline
-		text: rawJoke.joke ?? null,
+		singleText: rawJoke.joke ?? null,
 		fullText: isTwoPart
 			? `${rawJoke.setup} ... ${rawJoke.delivery}`
 			: rawJoke.joke

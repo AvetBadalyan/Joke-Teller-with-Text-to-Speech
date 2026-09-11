@@ -19,6 +19,14 @@ let onSpeechEnd = () => {}
 function initAudio({ onStart, onEnd } = {}) {
 	onSpeechStart = onStart ?? (() => {})
 	onSpeechEnd = onEnd ?? (() => {})
+
+	// Chrome loads voices asynchronously — getVoices() is empty on the first
+	// call and fills in later, firing "voiceschanged". Calling it here primes
+	// the list so a voice is ready by the time the first joke plays.
+	if (synth) {
+		synth.getVoices()
+		synth.addEventListener?.('voiceschanged', () => synth.getVoices())
+	}
 }
 
 /**

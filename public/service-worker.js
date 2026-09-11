@@ -1,5 +1,5 @@
 /**
- * sw.js - Service Worker (PWA offline support)
+ * service-worker.js - Service Worker (PWA offline support)
  *
  * Strategy: network-first for our own files.
  * We always try the network so a reload gets the latest code,
@@ -7,7 +7,7 @@
  * External requests (the joke API) are left untouched.
  */
 
-const CACHE_VERSION = 'v4.0.0'
+const CACHE_VERSION = 'v1.0.0'
 const CACHE_NAME = `joke-teller-${CACHE_VERSION}`
 
 const STATIC_ASSETS = [
