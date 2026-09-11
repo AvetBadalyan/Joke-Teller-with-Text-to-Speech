@@ -1,0 +1,21 @@
+{
+	"name": "Joke Teller - AI Comedy Robot",
+	"short_name": "Joke Teller",
+	"description": "An AI-powered joke teller with voice commands, categories, and text-to-speech",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#0f0f23",
+	"theme_color": "#6366f1",
+	"orientation": "portrait-primary",
+	"icons": [
+		{
+			"src": "favicon.png",
+			"sizes": "any",
+			"type": "image/png",
+			"purpose": "any"
+		}
+	],
+	"categories": ["entertainment", "games"],
+	"lang": "en",
+	"dir": "ltr"
+}

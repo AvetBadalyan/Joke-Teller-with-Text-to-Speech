@@ -1,0 +1,303 @@
+/**
+ * uiController.js — All DOM updates live here
+ *
+ * This is the "view" layer. It only touches the DOM — no API calls,
+ * no business logic, no state. app.js calls these functions to reflect
+ * what happened.
+ */
+
+// Maps JokeAPI category slugs → user-friendly display labels
+const CATEGORY_LABELS = {
+	Any: '🎲 Random',
+	Programming: '💻 Coding',
+	Pun: '🥁 Dad Jokes',
+	Spooky: '👻 Spooky',
+	Christmas: '🎄 Holiday',
+	Misc: '🎭 Miscellaneous'
+}
+
+// DOM element references — populated once by initUI()
+let elements = {}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────────────────────────
+
+function initUI() {
+	elements = {
+		// Joke card
+		jokeCategoryBadge: document.getElementById('jokeCategoryBadge'),
+		jokeSetupText: document.getElementById('jokeSetupText'),
+		jokePunchlineText: document.getElementById('jokePunchlineText'),
+		jokeSingleText: document.getElementById('jokeSingleText'),
+
+		// Joke card action buttons
+		saveJokeBtn: document.getElementById('saveJokeBtn'),
+		saveJokeIcon: document.getElementById('saveJokeIcon'),
+		shareJokeBtn: document.getElementById('shareJokeBtn'),
+		copyJokeBtn: document.getElementById('copyJokeBtn'),
+
+		// Main button
+		tellJokeBtn: document.getElementById('tellJokeBtn'),
+
+		// Header buttons
+		themeToggleBtn: document.getElementById('themeToggleBtn'),
+		savedJokesToggleBtn: document.getElementById('savedJokesToggleBtn'),
+
+		// Category filter
+		categoryButtons: document.querySelectorAll('.category-btn'),
+
+		// Saved jokes sidebar
+		savedJokesSidebar: document.getElementById('savedJokesSidebar'),
+		savedJokesList: document.getElementById('savedJokesList'),
+		savedJokesCount: document.getElementById('savedJokesCount'),
+		savedJokesEmptyMsg: document.getElementById('savedJokesEmptyMsg'),
+		closeSidebarBtn: document.getElementById('closeSidebarBtn'),
+		sidebarOverlay: document.getElementById('sidebarOverlay'),
+		clearSavedJokesBtn: document.getElementById('clearSavedJokesBtn'),
+
+		// Stats
+		totalJokesHeardCount: document.getElementById('totalJokesHeardCount'),
+
+		// Robot + sound wave
+		robotWrapper: document.getElementById('robotWrapper'),
+		soundWave: document.getElementById('soundWave'),
+
+		// Toasts
+		toastContainer: document.getElementById('toastContainer')
+	}
+
+	initTheme()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Joke display
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Render a joke on the card with a typewriter animation.
+ * Two-part jokes show setup first, then punchline after a short pause.
+ */
+function displayJoke(joke) {
+	elements.jokeCategoryBadge.textContent =
+		CATEGORY_LABELS[joke.apiCategory] ?? joke.apiCategory
+
+	// Clear previous text
+	elements.jokeSetupText.textContent = ''
+	elements.jokePunchlineText.textContent = ''
+	elements.jokeSingleText.textContent = ''
+
+	if (joke.type === 'twopart') {
+		elements.jokeSingleText.hidden = true
+		elements.jokeSetupText.hidden = false
+		elements.jokePunchlineText.hidden = false
+
+		typeText(elements.jokeSetupText, joke.setup, () => {
+			setTimeout(
+				() => typeText(elements.jokePunchlineText, joke.punchline),
+				500
+			)
+		})
+	} else {
+		elements.jokeSetupText.hidden = true
+		elements.jokePunchlineText.hidden = true
+		elements.jokeSingleText.hidden = false
+
+		typeText(elements.jokeSingleText, joke.text)
+	}
+
+	// Enable action buttons now that there's a joke to act on
+	elements.saveJokeBtn.disabled = false
+	elements.shareJokeBtn.disabled = false
+	elements.copyJokeBtn.disabled = false
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Loading state
+// ─────────────────────────────────────────────────────────────────────────────
+
+function setLoading(isLoading) {
+	elements.tellJokeBtn.disabled = isLoading
+	elements.tellJokeBtn.classList.toggle('btn--is-loading', isLoading)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Robot + sound wave
+// ─────────────────────────────────────────────────────────────────────────────
+
+function setRobotSpeaking(isSpeaking) {
+	elements.robotWrapper.classList.toggle('robot--is-speaking', isSpeaking)
+	elements.soundWave.classList.toggle('sound-wave--is-active', isSpeaking)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Category filter
+// ─────────────────────────────────────────────────────────────────────────────
+
+function setActiveCategory(categorySlug) {
+	elements.categoryButtons.forEach(btn => {
+		btn.classList.toggle('active', btn.dataset.category === categorySlug)
+	})
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Saved jokes sidebar
+// ─────────────────────────────────────────────────────────────────────────────
+
+function openSidebar() {
+	elements.savedJokesSidebar.classList.add('is-open')
+	elements.sidebarOverlay.classList.add('is-visible')
+	document.body.style.overflow = 'hidden'
+}
+
+function closeSidebar() {
+	elements.savedJokesSidebar.classList.remove('is-open')
+	elements.sidebarOverlay.classList.remove('is-visible')
+	document.body.style.overflow = ''
+}
+
+/**
+ * Re-render the saved jokes list.
+ * @param {Array} savedJokes
+ * @param {{ onRemove: Function, onPlay: Function }} callbacks
+ */
+function renderSavedJokes(savedJokes, callbacks) {
+	elements.savedJokesCount.textContent = savedJokes.length
+
+	if (savedJokes.length === 0) {
+		elements.savedJokesList.innerHTML = ''
+		elements.savedJokesList.appendChild(elements.savedJokesEmptyMsg)
+		elements.savedJokesEmptyMsg.hidden = false
+		elements.clearSavedJokesBtn.hidden = true
+		return
+	}
+
+	elements.savedJokesEmptyMsg.hidden = true
+	elements.clearSavedJokesBtn.hidden = false
+
+	elements.savedJokesList.innerHTML = savedJokes
+		.map(
+			(joke, i) => `
+        <div class="saved-joke-item" data-index="${i}">
+          <span class="saved-joke-item__category">${CATEGORY_LABELS[joke.apiCategory] ?? joke.apiCategory}</span>
+          <p class="saved-joke-item__text">${joke.fullText}</p>
+          <div class="saved-joke-item__actions">
+            <button class="btn btn--ghost" data-action="play" title="Read aloud">🔊</button>
+            <button class="btn btn--ghost" data-action="remove" title="Remove">🗑️</button>
+          </div>
+        </div>`
+		)
+		.join('')
+
+	// Attach click handlers
+	elements.savedJokesList.querySelectorAll('[data-action]').forEach(btn => {
+		btn.addEventListener('click', e => {
+			const item = e.currentTarget.closest('.saved-joke-item')
+			const index = Number(item.dataset.index)
+			const action = e.currentTarget.dataset.action
+			if (action === 'play') callbacks.onPlay(savedJokes[index])
+			if (action === 'remove') callbacks.onRemove(index)
+		})
+	})
+}
+
+function setSaveButtonState(isSaved) {
+	elements.saveJokeIcon.textContent = isSaved ? '❤️' : '🤍'
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stats
+// ─────────────────────────────────────────────────────────────────────────────
+
+function updateTotalJokesHeard(count) {
+	elements.totalJokesHeardCount.textContent = count
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Theme
+// ─────────────────────────────────────────────────────────────────────────────
+
+function initTheme() {
+	const saved = Storage.get(CONFIG.storageKeys.colorTheme)
+	const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+	document.documentElement.dataset.theme =
+		saved ?? (prefersDark ? 'dark' : 'light')
+}
+
+function toggleTheme() {
+	const html = document.documentElement
+	const newTheme = html.dataset.theme === 'dark' ? 'light' : 'dark'
+	html.dataset.theme = newTheme
+	Storage.set(CONFIG.storageKeys.colorTheme, newTheme)
+	return newTheme
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Toast notifications
+// ─────────────────────────────────────────────────────────────────────────────
+
+function showToast(message, type = 'info') {
+	const icons = { success: '✅', error: '❌', info: 'ℹ️' }
+
+	const toast = document.createElement('div')
+	toast.className = `toast toast--${type}`
+	toast.innerHTML = `
+    <span class="toast__icon">${icons[type] ?? icons.info}</span>
+    <span class="toast__message">${message}</span>`
+
+	elements.toastContainer.appendChild(toast)
+
+	setTimeout(() => {
+		toast.style.opacity = '0'
+		toast.style.transform = 'translateX(100%)'
+		setTimeout(() => toast.remove(), 300)
+	}, CONFIG.timing.toastVisibleDuration)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Private helper
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Typewriter effect — appends text one character at a time.
+ */
+function typeText(el, text, onDone) {
+	let i = 0
+	el.classList.add('typing-cursor')
+
+	function next() {
+		if (i < text.length) {
+			el.textContent += text[i++]
+			setTimeout(next, CONFIG.timing.typewriterCharDelay)
+		} else {
+			el.classList.remove('typing-cursor')
+			if (onDone) onDone()
+		}
+	}
+
+	next()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Export for app.js
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Grouped as UI so app.js can do UI.init(), UI.displayJoke(), UI.elements, etc.
+const UI = {
+	// elements is accessed after init() populates it
+	get elements() {
+		return elements
+	},
+	init: initUI,
+	displayJoke,
+	setLoading,
+	setRobotSpeaking,
+	setActiveCategory,
+	openSidebar,
+	closeSidebar,
+	renderSavedJokes,
+	setSaveButtonState,
+	updateTotalJokesHeard,
+	toggleTheme,
+	showToast
+}
