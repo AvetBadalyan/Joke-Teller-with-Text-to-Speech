@@ -1,22 +1,22 @@
 /**
- * audioController.js — Text-to-speech via the browser's built-in Web Speech API
+ * audioController.js — Text-to-speech via the Web Speech API
  *
  * No API key, no network call, works offline.
  *
- * Public functions:
- *   initAudio({ onStart, onEnd })  — wire up callbacks, populate voice dropdown
- *   speakJoke(text)                — speak a string; cancels any current speech
- *   previewVoice()                 — speak a short sample with the selected voice
- *   setVoice(voiceName)            — set the voice by name and persist the choice
+ * The "audio" layer: app.js calls these functions to speak jokes,
+ * preview voices, and change the active voice.
  */
 
 const synth = window.speechSynthesis
-
 const PREVIEW_PHRASE = 'Hey there! Ready to hear some jokes?'
 
 let onSpeechStart = () => {}
 let onSpeechEnd = () => {}
 let selectedVoice = null
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────────────────────────
 
 function initAudio({ onStart, onEnd } = {}) {
 	onSpeechStart = onStart ?? (() => {})
@@ -24,7 +24,6 @@ function initAudio({ onStart, onEnd } = {}) {
 
 	if (!synth) return
 
-	// Chrome loads voices asynchronously — populate once they're ready
 	const loadVoices = () => {
 		const voices = synth.getVoices()
 		if (!voices.length) return
@@ -37,34 +36,16 @@ function initAudio({ onStart, onEnd } = {}) {
 	synth.addEventListener('voiceschanged', loadVoices)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Speech
+// ─────────────────────────────────────────────────────────────────────────────
+
 function speakJoke(text) {
-	if (!synth || !text) return
-	synth.cancel()
-	const utterance = makeUtterance(text)
-	utterance.onstart = () => onSpeechStart()
-	utterance.onend = () => onSpeechEnd()
-	utterance.onerror = () => onSpeechEnd()
-	synth.speak(utterance)
+	speak(text)
 }
 
 function previewVoice() {
-	if (!synth) return
-	synth.cancel()
-	// Use the same makeUtterance helper so the preview uses selectedVoice,
-	// rate, and pitch — identical to how jokes are spoken.
-	const utterance = makeUtterance(PREVIEW_PHRASE)
-	utterance.onstart = () => onSpeechStart()
-	utterance.onend = () => onSpeechEnd()
-	utterance.onerror = () => onSpeechEnd()
-	synth.speak(utterance)
-}
-
-function makeUtterance(text) {
-	const u = new SpeechSynthesisUtterance(text)
-	u.rate = 1.05 // slightly faster — more lively
-	u.pitch = 1.1 // higher pitch — sounds happier
-	u.voice = selectedVoice
-	return u
+	speak(PREVIEW_PHRASE)
 }
 
 function setVoice(voiceName) {
@@ -76,7 +57,25 @@ function setVoice(voiceName) {
 	}
 }
 
-// ─── Private helpers ────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Private helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Speak text with robot animation callbacks */
+function speak(text) {
+	if (!synth || !text) return
+	synth.cancel()
+
+	const utterance = new SpeechSynthesisUtterance(text)
+	utterance.rate = 1.05
+	utterance.pitch = 1.1
+	utterance.voice = selectedVoice
+	utterance.onstart = () => onSpeechStart()
+	utterance.onend = () => onSpeechEnd()
+	utterance.onerror = () => onSpeechEnd()
+
+	synth.speak(utterance)
+}
 
 /**
  * Pick the default voice. Respects a saved preference; otherwise uses
@@ -100,4 +99,15 @@ function pickVoice(voices) {
  */
 function getVoiceOptions(voices) {
 	return voices.filter(v => v.lang.startsWith('en')).map(v => v.name)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Export
+// ─────────────────────────────────────────────────────────────────────────────
+
+const AudioController = {
+	init: initAudio,
+	speakJoke,
+	previewVoice,
+	setVoice
 }

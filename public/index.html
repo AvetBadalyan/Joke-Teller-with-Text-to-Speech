@@ -266,8 +266,6 @@
 					class="category-filter"
 					aria-label="Filter jokes by category"
 				>
-					<h2 class="sr-only">Joke categories</h2>
-
 					<div class="category-filter__buttons">
 						<!--
 					data-category must match the API slug exactly.
@@ -307,9 +305,22 @@
 								class="category-btn__icon"
 								aria-hidden="true"
 							>
-								🥁
+								😂
 							</span>
-							<span class="category-btn__label">Dad Jokes</span>
+							<span class="category-btn__label">Wordplay</span>
+						</button>
+
+						<button
+							class="category-btn"
+							data-category="Dark"
+						>
+							<span
+								class="category-btn__icon"
+								aria-hidden="true"
+							>
+								🌑
+							</span>
+							<span class="category-btn__label">Dark</span>
 						</button>
 
 						<button
@@ -320,9 +331,9 @@
 								class="category-btn__icon"
 								aria-hidden="true"
 							>
-								👻
+								🎃
 							</span>
-							<span class="category-btn__label">Spooky</span>
+							<span class="category-btn__label">Halloween</span>
 						</button>
 
 						<button
@@ -348,7 +359,7 @@
 							>
 								🎭
 							</span>
-							<span class="category-btn__label">Miscellaneous</span>
+							<span class="category-btn__label">Other</span>
 						</button>
 					</div>
 				</section>
@@ -459,6 +470,51 @@
 				id="sidebarOverlay"
 				aria-hidden="true"
 			></div>
+
+			<!-- Themed confirmation dialog (replaces native confirm()) -->
+			<div
+				class="modal"
+				id="confirmModal"
+				aria-hidden="true"
+				inert
+			>
+				<div
+					class="modal__overlay"
+					id="confirmModalOverlay"
+				></div>
+				<div
+					class="modal__dialog"
+					role="alertdialog"
+					aria-modal="true"
+					aria-labelledby="confirmModalTitle"
+					aria-describedby="confirmModalMessage"
+				>
+					<h2
+						class="modal__title"
+						id="confirmModalTitle"
+					>
+						Are you sure?
+					</h2>
+					<p
+						class="modal__message"
+						id="confirmModalMessage"
+					></p>
+					<div class="modal__actions">
+						<button
+							class="btn btn--ghost-outline"
+							id="confirmModalCancelBtn"
+						>
+							Cancel
+						</button>
+						<button
+							class="btn btn--danger"
+							id="confirmModalConfirmBtn"
+						>
+							Confirm
+						</button>
+					</div>
+				</div>
+			</div>
 
 			<!-- Toast notification container -->
 			<div

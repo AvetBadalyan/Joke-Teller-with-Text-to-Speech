@@ -1,34 +1,24 @@
 /**
- * uiController.js — All DOM updates live here
+ * uiController.js — DOM updates
  *
- * This is the "view" layer. It only touches the DOM — no API calls,
- * no business logic, no state. app.js calls these functions to reflect
- * what happened.
+ * The "view" layer: no API calls, no business logic, no state.
+ * app.js calls these functions to reflect what happened.
  */
 
-// Maps JokeAPI category slugs → user-friendly display labels.
-// Keys match the data-category attributes in index.html exactly.
+// Category display labels (keys match data-category in HTML)
 const CATEGORY_LABELS = {
 	Any: '🎲 Random',
 	Programming: '💻 Coding',
-	Pun: '🥁 Dad Jokes',
-	Spooky: '👻 Spooky',
+	Pun: '😂 Wordplay',
+	Dark: '🌑 Dark',
+	Spooky: '🎃 Halloween',
 	Christmas: '🎄 Holiday',
-	Misc: '🎭 Miscellaneous'
+	Misc: '🎭 Other'
 }
 
-// DOM element references — populated once by initUI()
 let elements = {}
-
-// Generation counter — incremented on every new joke to cancel stale typewriter chains
 let jokeGeneration = 0
-
-// Callbacks for the saved jokes list — set once by the first renderSavedJokes call.
-// Stored here so the single delegated listener on savedJokesList can reach them.
 let savedJokesCallbacks = { onPlay: () => {}, onRemove: () => {} }
-
-// The current saved jokes array — kept in sync by renderSavedJokes so the
-// delegated click handler can look up a joke by its DOM index.
 let savedJokesData = []
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -37,29 +27,18 @@ let savedJokesData = []
 
 function initUI() {
 	elements = {
-		// Joke card
 		jokeCategoryBadge: document.getElementById('jokeCategoryBadge'),
 		jokeSetupText: document.getElementById('jokeSetupText'),
 		jokePunchlineText: document.getElementById('jokePunchlineText'),
 		jokeSingleText: document.getElementById('jokeSingleText'),
-
-		// Joke card action buttons
 		saveJokeBtn: document.getElementById('saveJokeBtn'),
 		saveJokeIcon: document.getElementById('saveJokeIcon'),
 		shareJokeBtn: document.getElementById('shareJokeBtn'),
 		copyJokeBtn: document.getElementById('copyJokeBtn'),
-
-		// Main button
 		tellJokeBtn: document.getElementById('tellJokeBtn'),
-
-		// Header buttons
 		themeToggleBtn: document.getElementById('themeToggleBtn'),
 		savedJokesToggleBtn: document.getElementById('savedJokesToggleBtn'),
-
-		// Category filter
 		categoryButtons: document.querySelectorAll('.category-btn'),
-
-		// Saved jokes sidebar
 		savedJokesSidebar: document.getElementById('savedJokesSidebar'),
 		savedJokesList: document.getElementById('savedJokesList'),
 		savedJokesCount: document.getElementById('savedJokesCount'),
@@ -67,29 +46,24 @@ function initUI() {
 		closeSidebarBtn: document.getElementById('closeSidebarBtn'),
 		sidebarOverlay: document.getElementById('sidebarOverlay'),
 		clearSavedJokesBtn: document.getElementById('clearSavedJokesBtn'),
-
-		// Stats
 		totalJokesHeardCount: document.getElementById('totalJokesHeardCount'),
-
-		// Robot + sound wave
 		robotWrapper: document.getElementById('robotWrapper'),
 		soundWave: document.getElementById('soundWave'),
-
-		// Voice selector
 		voiceSelect: document.getElementById('voiceSelect'),
 		previewVoiceBtn: document.getElementById('previewVoiceBtn'),
-
-		// Joke card sr-only live region (announced once, not character-by-character)
 		jokeAnnouncement: document.getElementById('jokeAnnouncement'),
-
-		// Toasts
-		toastContainer: document.getElementById('toastContainer')
+		toastContainer: document.getElementById('toastContainer'),
+		confirmModal: document.getElementById('confirmModal'),
+		confirmModalOverlay: document.getElementById('confirmModalOverlay'),
+		confirmModalTitle: document.getElementById('confirmModalTitle'),
+		confirmModalMessage: document.getElementById('confirmModalMessage'),
+		confirmModalConfirmBtn: document.getElementById('confirmModalConfirmBtn'),
+		confirmModalCancelBtn: document.getElementById('confirmModalCancelBtn')
 	}
 
 	initTheme()
 
-	// Single delegated click listener for the saved jokes list.
-	// Attached once here so re-rendering the list never leaks listeners.
+	// Delegated click listener for saved jokes list
 	elements.savedJokesList.addEventListener('click', e => {
 		const btn = e.target.closest('[data-action]')
 		if (!btn) return
@@ -106,24 +80,16 @@ function initUI() {
 // Joke display
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Render a joke on the card with a typewriter animation.
- * Two-part jokes show the setup first, then the punchline after a short pause.
- */
+/** Render a joke with typewriter animation */
 function displayJoke(joke) {
 	elements.jokeCategoryBadge.textContent =
 		CATEGORY_LABELS[joke.apiCategory] ?? joke.apiCategory
 
-	// Bump generation — any in-flight typewriter chain from a previous joke
-	// will see its generation is stale and stop appending characters.
 	const gen = ++jokeGeneration
 
-	// Announce the complete joke text once to screen readers via the sr-only
-	// live region, so they hear the full joke rather than character-by-character
-	// updates from the visible typewriter elements.
+	// Full text for screen readers (no character-by-character)
 	elements.jokeAnnouncement.textContent = joke.fullText
 
-	// Clear previous visible text
 	elements.jokeSetupText.textContent = ''
 	elements.jokePunchlineText.textContent = ''
 	elements.jokeSingleText.textContent = ''
@@ -147,7 +113,6 @@ function displayJoke(joke) {
 		typeText(elements.jokeSingleText, joke.singleText, gen)
 	}
 
-	// Enable action buttons now that there's a joke to act on
 	elements.saveJokeBtn.disabled = false
 	elements.shareJokeBtn.disabled = false
 	elements.copyJokeBtn.disabled = false
@@ -182,7 +147,7 @@ function setActiveCategory(categorySlug) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Saved jokes sidebar
+// Sidebar
 // ─────────────────────────────────────────────────────────────────────────────
 
 function openSidebar() {
@@ -192,7 +157,6 @@ function openSidebar() {
 	elements.savedJokesSidebar.setAttribute('aria-hidden', 'false')
 	elements.savedJokesToggleBtn.setAttribute('aria-expanded', 'true')
 	document.body.style.overflow = 'hidden'
-	// Move focus into the sidebar so keyboard users aren't left behind the backdrop
 	elements.closeSidebarBtn.focus()
 }
 
@@ -203,7 +167,6 @@ function closeSidebar() {
 	elements.savedJokesSidebar.setAttribute('aria-hidden', 'true')
 	elements.savedJokesToggleBtn.setAttribute('aria-expanded', 'false')
 	document.body.style.overflow = ''
-	// Return focus to the button that opened the sidebar
 	elements.savedJokesToggleBtn.focus()
 }
 
@@ -211,23 +174,18 @@ function isSidebarOpen() {
 	return elements.savedJokesSidebar.classList.contains('is-open')
 }
 
-/**
- * Re-render the saved jokes list.
- * @param {Array} savedJokes
- * @param {{ onRemove: Function, onPlay: Function }} callbacks
- */
+function isConfirmOpen() {
+	return elements.confirmModal.classList.contains('is-open')
+}
+
+/** Render the saved jokes list */
 function renderSavedJokes(savedJokes, callbacks) {
-	// Keep the module-level refs in sync so the delegated listener (wired once
-	// in initUI) can always reach the current data and callbacks.
 	savedJokesData = savedJokes
 	savedJokesCallbacks = callbacks
 
 	elements.savedJokesCount.textContent = savedJokes.length
 
 	if (savedJokes.length === 0) {
-		// Clearing innerHTML first ensures the empty message element (which
-		// lives in the DOM) is not duplicated if it was previously removed
-		// by a prior innerHTML assignment and then re-appended here.
 		elements.savedJokesList.innerHTML = ''
 		elements.savedJokesList.appendChild(elements.savedJokesEmptyMsg)
 		elements.savedJokesEmptyMsg.hidden = false
@@ -238,8 +196,6 @@ function renderSavedJokes(savedJokes, callbacks) {
 	elements.savedJokesEmptyMsg.hidden = true
 	elements.clearSavedJokesBtn.hidden = false
 
-	// Render list items. Click handling is done by the delegated listener in
-	// initUI — no per-item addEventListener needed here.
 	elements.savedJokesList.innerHTML = savedJokes
 		.map(
 			(joke, i) => `
@@ -273,11 +229,6 @@ function updateTotalJokesHeard(count) {
 // Voice selector
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Populate the voice dropdown with available voices.
- * @param {string[]} voices - Array of voice names from audioController
- * @param {string} selectedName - Currently selected voice name
- */
 function populateVoiceDropdown(voices, selectedName) {
 	const select = elements.voiceSelect
 	if (!select) return
@@ -337,33 +288,106 @@ function showToast(message, type = 'info') {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Confirmation modal
+// ─────────────────────────────────────────────────────────────────────────────
+
+let confirmModalCleanup = null
+
+/**
+ * Themed replacement for the native confirm().
+ * Returns a Promise that resolves to true (confirm) or false (cancel).
+ *
+ * @param {Object} [options]
+ * @param {string} [options.title]       Heading text.
+ * @param {string} [options.message]     Body text.
+ * @param {string} [options.confirmText] Confirm button label.
+ * @param {string} [options.cancelText]  Cancel button label.
+ */
+function confirmDialog({
+	title = 'Are you sure?',
+	message = '',
+	confirmText = 'Confirm',
+	cancelText = 'Cancel'
+} = {}) {
+	const {
+		confirmModal,
+		confirmModalOverlay,
+		confirmModalTitle,
+		confirmModalMessage,
+		confirmModalConfirmBtn,
+		confirmModalCancelBtn
+	} = elements
+
+	// Guard against overlapping dialogs
+	if (confirmModalCleanup) confirmModalCleanup()
+
+	confirmModalTitle.textContent = title
+	confirmModalMessage.textContent = message
+	confirmModalConfirmBtn.textContent = confirmText
+	confirmModalCancelBtn.textContent = cancelText
+
+	const previouslyFocused = document.activeElement
+
+	confirmModal.classList.add('is-open')
+	confirmModal.removeAttribute('inert')
+	confirmModal.setAttribute('aria-hidden', 'false')
+	document.body.style.overflow = 'hidden'
+	confirmModalConfirmBtn.focus()
+
+	return new Promise(resolve => {
+		const close = result => {
+			confirmModal.classList.remove('is-open')
+			confirmModal.setAttribute('inert', '')
+			confirmModal.setAttribute('aria-hidden', 'true')
+			document.body.style.overflow = ''
+
+			confirmModalConfirmBtn.removeEventListener('click', onConfirm)
+			confirmModalCancelBtn.removeEventListener('click', onCancel)
+			confirmModalOverlay.removeEventListener('click', onCancel)
+			document.removeEventListener('keydown', onKeydown, true)
+			confirmModalCleanup = null
+
+			if (previouslyFocused?.focus) previouslyFocused.focus()
+			resolve(result)
+		}
+
+		const onConfirm = () => close(true)
+		const onCancel = () => close(false)
+		const onKeydown = e => {
+			if (e.key === 'Escape') {
+				e.stopPropagation()
+				onCancel()
+			}
+		}
+
+		confirmModalConfirmBtn.addEventListener('click', onConfirm)
+		confirmModalCancelBtn.addEventListener('click', onCancel)
+		confirmModalOverlay.addEventListener('click', onCancel)
+		// Capture phase so Escape closes the modal before the app's global handler
+		document.addEventListener('keydown', onKeydown, true)
+
+		// Exposed so a second confirmDialog() call can force-close this one
+		confirmModalCleanup = () => close(false)
+	})
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Private helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Escape a string for safe insertion into innerHTML.
- * Joke text comes from a third-party API and toast messages can contain
- * arbitrary content, so we neutralise any HTML before rendering it.
- */
+/** Escape HTML to prevent XSS */
 function escapeHtml(value) {
 	const div = document.createElement('div')
 	div.textContent = String(value ?? '')
 	return div.innerHTML
 }
 
-/**
- * Typewriter effect — appends text one character at a time.
- * @param {HTMLElement} el      - Target element to type into.
- * @param {string}      text    - Text to type.
- * @param {number}      gen     - Generation stamp; stops if a newer joke has started.
- * @param {Function}   [onDone] - Optional callback fired when typing finishes.
- */
+/** Typewriter effect — stops if a newer joke starts (gen mismatch) */
 function typeText(el, text, gen, onDone) {
 	let i = 0
 	el.classList.add('typing-cursor')
 
 	function next() {
-		// A new joke has been requested — stop this stale chain immediately
 		if (gen !== jokeGeneration) {
 			el.classList.remove('typing-cursor')
 			return
@@ -381,12 +405,10 @@ function typeText(el, text, gen, onDone) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Export for app.js
+// Export
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Grouped as UI so app.js can call UI.init(), UI.displayJoke(), UI.elements, etc.
 const UI = {
-	// elements is accessed after init() populates it
 	get elements() {
 		return elements
 	},
@@ -398,10 +420,12 @@ const UI = {
 	openSidebar,
 	closeSidebar,
 	isSidebarOpen,
+	isConfirmOpen,
 	renderSavedJokes,
 	setSaveButtonState,
 	updateTotalJokesHeard,
 	populateVoiceDropdown,
 	toggleTheme,
-	showToast
+	showToast,
+	confirm: confirmDialog
 }

@@ -7,7 +7,7 @@
  * External requests (the joke API) are left untouched.
  */
 
-const CACHE_VERSION = 'v1.3.0'
+const CACHE_VERSION = 'v1.7.0'
 const CACHE_NAME = `joke-teller-${CACHE_VERSION}`
 
 const STATIC_ASSETS = [

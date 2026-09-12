@@ -1,5 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html
+	lang="en"
+	data-theme="dark"
+>
 	<head>
 		<meta charset="UTF-8" />
 		<meta
@@ -7,87 +10,62 @@
 			content="width=device-width, initial-scale=1.0"
 		/>
 		<title>404 - Page Not Found | Joke Teller</title>
+		<link
+			rel="stylesheet"
+			href="style.css"
+		/>
 		<style>
-			* {
-				margin: 0;
-				padding: 0;
-				box-sizing: border-box;
-			}
-
-			body {
-				font-family:
-					'Inter',
-					-apple-system,
-					BlinkMacSystemFont,
-					sans-serif;
-				min-height: 100vh;
+			.error-page {
 				display: flex;
 				flex-direction: column;
 				align-items: center;
 				justify-content: center;
-				background: linear-gradient(135deg, #0f0f23, #1a1a2e);
-				color: #ffffff;
+				min-height: 100vh;
 				text-align: center;
-				padding: 2rem;
+				padding: var(--space-8);
+				gap: var(--space-4);
 			}
 
-			.emoji {
+			.error-page__emoji {
 				font-size: 6rem;
-				margin-bottom: 1rem;
 				animation: bounce 2s ease-in-out infinite;
 			}
 
-			h1 {
+			.error-page__title {
 				font-size: 2rem;
-				margin-bottom: 0.5rem;
-				background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+				font-weight: 700;
+				background: var(--gradient-accent);
 				-webkit-background-clip: text;
 				-webkit-text-fill-color: transparent;
 				background-clip: text;
 			}
 
-			p {
-				color: #a0a0b2;
-				margin-bottom: 2rem;
+			.error-page__message {
+				color: var(--color-text-secondary);
 				max-width: 400px;
-			}
-
-			a {
-				display: inline-block;
-				padding: 1rem 2rem;
-				background: linear-gradient(135deg, #6366f1, #8b5cf6);
-				color: white;
-				text-decoration: none;
-				border-radius: 12px;
-				font-weight: 500;
-				transition:
-					transform 0.2s,
-					box-shadow 0.2s;
-			}
-
-			a:hover {
-				transform: translateY(-2px);
-				box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-			}
-
-			@keyframes bounce {
-				0%,
-				100% {
-					transform: translateY(0);
-				}
-				50% {
-					transform: translateY(-10px);
-				}
+				line-height: 1.6;
 			}
 		</style>
 	</head>
 	<body>
-		<div class="emoji">🤖</div>
-		<h1>404 - Page Not Found</h1>
-		<p>
-			Oops! The robot couldn't find that page. Maybe it wandered off looking for
-			better jokes...
-		</p>
-		<a href="/">← Back to Jokes</a>
+		<div class="error-page">
+			<div
+				class="error-page__emoji"
+				aria-hidden="true"
+			>
+				🤖
+			</div>
+			<h1 class="error-page__title">404 — Page Not Found</h1>
+			<p class="error-page__message">
+				The robot couldn't find that page. Maybe it wandered off looking for
+				better jokes...
+			</p>
+			<a
+				href="/"
+				class="btn btn--primary"
+			>
+				← Back to Jokes
+			</a>
+		</div>
 	</body>
 </html>
