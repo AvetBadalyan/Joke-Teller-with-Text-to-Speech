@@ -23,6 +23,14 @@ let elements = {}
 // Generation counter — incremented on every new joke to cancel stale typewriter chains
 let jokeGeneration = 0
 
+// Callbacks for the saved jokes list — set once by the first renderSavedJokes call.
+// Stored here so the single delegated listener on savedJokesList can reach them.
+let savedJokesCallbacks = { onPlay: () => {}, onRemove: () => {} }
+
+// The current saved jokes array — kept in sync by renderSavedJokes so the
+// delegated click handler can look up a joke by its DOM index.
+let savedJokesData = []
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Init
 // ─────────────────────────────────────────────────────────────────────────────
@@ -79,6 +87,19 @@ function initUI() {
 	}
 
 	initTheme()
+
+	// Single delegated click listener for the saved jokes list.
+	// Attached once here so re-rendering the list never leaks listeners.
+	elements.savedJokesList.addEventListener('click', e => {
+		const btn = e.target.closest('[data-action]')
+		if (!btn) return
+		const item = btn.closest('.saved-joke-item')
+		if (!item) return
+		const index = Number(item.dataset.index)
+		const action = btn.dataset.action
+		if (action === 'play') savedJokesCallbacks.onPlay(savedJokesData[index])
+		if (action === 'remove') savedJokesCallbacks.onRemove(index)
+	})
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -196,6 +217,11 @@ function isSidebarOpen() {
  * @param {{ onRemove: Function, onPlay: Function }} callbacks
  */
 function renderSavedJokes(savedJokes, callbacks) {
+	// Keep the module-level refs in sync so the delegated listener (wired once
+	// in initUI) can always reach the current data and callbacks.
+	savedJokesData = savedJokes
+	savedJokesCallbacks = callbacks
+
 	elements.savedJokesCount.textContent = savedJokes.length
 
 	if (savedJokes.length === 0) {
@@ -212,6 +238,8 @@ function renderSavedJokes(savedJokes, callbacks) {
 	elements.savedJokesEmptyMsg.hidden = true
 	elements.clearSavedJokesBtn.hidden = false
 
+	// Render list items. Click handling is done by the delegated listener in
+	// initUI — no per-item addEventListener needed here.
 	elements.savedJokesList.innerHTML = savedJokes
 		.map(
 			(joke, i) => `
@@ -227,17 +255,6 @@ function renderSavedJokes(savedJokes, callbacks) {
         </div>`
 		)
 		.join('')
-
-	// Attach click handlers via event delegation on the container
-	elements.savedJokesList.querySelectorAll('[data-action]').forEach(btn => {
-		btn.addEventListener('click', e => {
-			const item = e.currentTarget.closest('.saved-joke-item')
-			const index = Number(item.dataset.index)
-			const action = e.currentTarget.dataset.action
-			if (action === 'play') callbacks.onPlay(savedJokes[index])
-			if (action === 'remove') callbacks.onRemove(index)
-		})
-	})
 }
 
 function setSaveButtonState(isSaved) {

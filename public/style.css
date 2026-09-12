@@ -228,7 +228,8 @@ kbd {
 /*
  * .app fills exactly the viewport height.
  * Flexbox distributes space: header and footer get their natural size,
- * main takes the rest. No scroll unless content actually overflows.
+ * main takes the rest. overflow-y: auto on .app lets the whole layout
+ * scroll if content overflows — important on very short viewports.
  *
  * 100dvh = dynamic viewport height (accounts for mobile browser chrome).
  * Fallback to 100vh for older browsers.
@@ -241,7 +242,7 @@ kbd {
 	max-width: 740px;
 	margin: 0 auto;
 	padding: var(--space-4);
-	overflow: hidden;
+	overflow-y: auto;
 }
 
 .main {
@@ -253,7 +254,6 @@ kbd {
 	gap: var(--space-4);
 	padding: var(--space-2) 0;
 	width: 100%;
-	overflow-y: auto;
 }
 
 .footer {
@@ -793,6 +793,7 @@ kbd {
 .btn--sm {
 	padding: var(--space-1);
 	font-size: 1rem;
+	border: none;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -1175,7 +1176,9 @@ kbd {
 	}
 
 	.voice-selector__label {
-		/* Visually hidden on mobile but still read by screen readers */
+		/* On mobile the label is visually hidden but stays available to
+		   screen readers. These rules match .sr-only — plain CSS has no
+		   @extend, so the pattern is repeated here intentionally. */
 		position: absolute;
 		width: 1px;
 		height: 1px;

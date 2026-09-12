@@ -7,7 +7,7 @@
  * External requests (the joke API) are left untouched.
  */
 
-const CACHE_VERSION = 'v1.2.1'
+const CACHE_VERSION = 'v1.3.0'
 const CACHE_NAME = `joke-teller-${CACHE_VERSION}`
 
 const STATIC_ASSETS = [
@@ -22,7 +22,11 @@ const STATIC_ASSETS = [
 	'./js/uiController.js',
 	'./js/app.js',
 	'./robot.gif',
-	'./favicon.png'
+	'./favicon.png',
+	'./icon-192.png',
+	'./icon-512.png',
+	'./icon-maskable-192.png',
+	'./icon-maskable-512.png'
 ]
 
 // Install: pre-cache the app shell

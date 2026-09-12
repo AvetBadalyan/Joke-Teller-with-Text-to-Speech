@@ -50,7 +50,13 @@ function speakJoke(text) {
 function previewVoice() {
 	if (!synth) return
 	synth.cancel()
-	synth.speak(makeUtterance(PREVIEW_PHRASE))
+	// Use the same makeUtterance helper so the preview uses selectedVoice,
+	// rate, and pitch — identical to how jokes are spoken.
+	const utterance = makeUtterance(PREVIEW_PHRASE)
+	utterance.onstart = () => onSpeechStart()
+	utterance.onend = () => onSpeechEnd()
+	utterance.onerror = () => onSpeechEnd()
+	synth.speak(utterance)
 }
 
 function makeUtterance(text) {
